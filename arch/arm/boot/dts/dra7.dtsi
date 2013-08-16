@@ -57,6 +57,15 @@
 		};
 	};
 
+	thermal_zones: thermal-zones {
+		/* SoC thermal zones */
+		#include "omap4-cpu-thermal.dtsi"
+		#include "omap5-gpu-thermal.dtsi"
+		#include "omap5-core-thermal.dtsi"
+		#include "dra7-dspeve-thermal.dtsi"
+		#include "dra7-iva-thermal.dtsi"
+	};
+
 	bandgap: bandgap {
 		reg = <0x4a0021e0 0xc
 			0x4a00232c 0xc
