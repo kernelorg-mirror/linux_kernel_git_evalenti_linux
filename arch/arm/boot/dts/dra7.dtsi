@@ -7,7 +7,9 @@
  * Based on "omap4.dtsi"
  */
 
-/include/ "skeleton.dtsi"
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+
+#include "skeleton.dtsi"
 
 / {
 	compatible = "ti,dra7xx";
