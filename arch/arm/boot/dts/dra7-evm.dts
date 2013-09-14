@@ -7,6 +7,8 @@
  */
 /dts-v1/;
 
+#include <dt-bindings/thermal/thermal.h>
+
 #include "dra7.dtsi"
 
 / {
@@ -93,6 +95,12 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&i2c1_pins>;
 	clock-frequency = <400000>;
+	tmp102: tmp102@48{
+		compatible = "ti,tmp102";
+		reg = <0x48>;
+
+		#thermal-sensor-cells = <0>;
+	};
 };
 
 &i2c2 {
