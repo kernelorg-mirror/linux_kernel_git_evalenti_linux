@@ -25,8 +25,12 @@
 	};
 
 	cpus {
-		cpu@0 {
+		cpu0: cpu@0 {
 			compatible = "arm,cortex-a15";
+
+			/* cooling properties */
+			#cooling-cells = <2>; /* min and max */
+
 			timer {
 				compatible = "arm,armv7-timer";
 				/*
