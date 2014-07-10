@@ -753,6 +753,10 @@ static void free_arg(struct print_arg *arg)
 		free_arg(arg->symbol.field);
 		free_flag_sym(arg->symbol.symbols);
 		break;
+	case PRINT_U8:
+	case PRINT_U16:
+	case PRINT_U32:
+	case PRINT_U64:
 	case PRINT_HEX:
 		free_arg(arg->num.field);
 		free_arg(arg->num.size);
@@ -2827,6 +2831,22 @@ process_function(struct event_format *event, struct print_arg *arg,
 		free_token(token);
 		return process_hex(event, arg, tok);
 	}
+	if (strcmp(token, "__print_u8_array") == 0) {
+		free_token(token);
+		return process_num(event, arg, tok, PRINT_U8);
+	}
+	if (strcmp(token, "__print_u16_array") == 0) {
+		free_token(token);
+		return process_num(event, arg, tok, PRINT_U16);
+	}
+	if (strcmp(token, "__print_u32_array") == 0) {
+		free_token(token);
+		return process_num(event, arg, tok, PRINT_U32);
+	}
+	if (strcmp(token, "__print_u64_array") == 0) {
+		free_token(token);
+		return process_num(event, arg, tok, PRINT_U64);
+	}
 	if (strcmp(token, "__get_str") == 0) {
 		free_token(token);
 		return process_str(event, arg, tok);
@@ -3355,6 +3375,10 @@ eval_num_arg(void *data, int size, struct event_format *event, struct print_arg 
 		break;
 	case PRINT_FLAGS:
 	case PRINT_SYMBOL:
+	case PRINT_U8:
+	case PRINT_U16:
+	case PRINT_U32:
+	case PRINT_U64:
 	case PRINT_HEX:
 		break;
 	case PRINT_TYPE:
@@ -3660,7 +3684,7 @@ static void print_str_arg(struct trace_seq *s, void *data, int size,
 	unsigned long long val, fval;
 	unsigned long addr;
 	char *str;
-	unsigned char *hex;
+	void *num;
 	int print;
 	int i, len;
 
@@ -3739,13 +3763,17 @@ static void print_str_arg(struct trace_seq *s, void *data, int size,
 			}
 		}
 		break;
+	case PRINT_U8:
+	case PRINT_U16:
+	case PRINT_U32:
+	case PRINT_U64:
 	case PRINT_HEX:
 		if (arg->num.field->type == PRINT_DYNAMIC_ARRAY) {
 			unsigned long offset;
 			offset = pevent_read_number(pevent,
 				data + arg->num.field->dynarray.field->offset,
 				arg->num.field->dynarray.field->size);
-			hex = data + (offset & 0xffff);
+			num = data + (offset & 0xffff);
 		} else {
 			field = arg->num.field->field.field;
 			if (!field) {
@@ -3755,13 +3783,24 @@ static void print_str_arg(struct trace_seq *s, void *data, int size,
 					goto out_warning_field;
 				arg->num.field->field.field = field;
 			}
-			hex = data + field->offset;
+			num = data + field->offset;
 		}
 		len = eval_num_arg(data, size, event, arg->num.size);
 		for (i = 0; i < len; i++) {
 			if (i)
 				trace_seq_putc(s, ' ');
-			trace_seq_printf(s, "%02x", hex[i]);
+			if (arg->type == PRINT_HEX)
+				trace_seq_printf(s, "%02x",
+						((uint8_t *)num)[i]);
+			else if (arg->type == PRINT_U8)
+				trace_seq_printf(s, "%u", ((uint8_t *)num)[i]);
+			else if (arg->type == PRINT_U16)
+				trace_seq_printf(s, "%u", ((uint16_t *)num)[i]);
+			else if (arg->type == PRINT_U32)
+				trace_seq_printf(s, "%u", ((uint32_t *)num)[i]);
+			else    /* PRINT_U64 */
+				trace_seq_printf(s, "%lu",
+						((uint64_t *)num)[i]);
 		}
 		break;
 
@@ -4922,7 +4961,20 @@ static void print_args(struct print_arg *args)
 		printf(")");
 		break;
 	case PRINT_HEX:
-		printf("__print_hex(");
+	case PRINT_U8:
+	case PRINT_U16:
+	case PRINT_U32:
+	case PRINT_U64:
+		if (args->type == PRINT_HEX)
+			printf("__print_hex(");
+		else if (args->type == PRINT_U8)
+			printf("__print_u8_array(");
+		else if (args->type == PRINT_U16)
+			printf("__print_u16_array(");
+		else if (args->type == PRINT_U32)
+			printf("__print_u32_array(");
+		else /* PRINT_U64 */
+			printf("__print_u64_array(");
 		print_args(args->num.field);
 		printf(", ");
 		print_args(args->num.size);
