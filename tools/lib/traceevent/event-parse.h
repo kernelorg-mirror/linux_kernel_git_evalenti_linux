@@ -240,7 +240,7 @@ struct print_arg_symbol {
 	struct print_flag_sym	*symbols;
 };
 
-struct print_arg_hex {
+struct print_arg_num {
 	struct print_arg	*field;
 	struct print_arg	*size;
 };
@@ -291,7 +291,7 @@ struct print_arg {
 		struct print_arg_typecast	typecast;
 		struct print_arg_flags		flags;
 		struct print_arg_symbol		symbol;
-		struct print_arg_hex		hex;
+		struct print_arg_num		num;
 		struct print_arg_func		func;
 		struct print_arg_string		string;
 		struct print_arg_bitmask	bitmask;

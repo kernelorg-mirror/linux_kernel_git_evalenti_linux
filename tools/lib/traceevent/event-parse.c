@@ -754,8 +754,8 @@ static void free_arg(struct print_arg *arg)
 		free_flag_sym(arg->symbol.symbols);
 		break;
 	case PRINT_HEX:
-		free_arg(arg->hex.field);
-		free_arg(arg->hex.size);
+		free_arg(arg->num.field);
+		free_arg(arg->num.size);
 		break;
 	case PRINT_TYPE:
 		free(arg->typecast.type);
@@ -2503,7 +2503,7 @@ process_hex(struct event_format *event, struct print_arg *arg, char **tok)
 	if (test_type_token(type, token, EVENT_DELIM, ","))
 		goto out_free;
 
-	arg->hex.field = field;
+	arg->num.field = field;
 
 	free_token(token);
 
@@ -2519,7 +2519,7 @@ process_hex(struct event_format *event, struct print_arg *arg, char **tok)
 	if (test_type_token(type, token, EVENT_DELIM, ")"))
 		goto out_free;
 
-	arg->hex.size = field;
+	arg->num.size = field;
 
 	free_token(token);
 	type = read_token_item(tok);
@@ -3740,24 +3740,24 @@ static void print_str_arg(struct trace_seq *s, void *data, int size,
 		}
 		break;
 	case PRINT_HEX:
-		if (arg->hex.field->type == PRINT_DYNAMIC_ARRAY) {
+		if (arg->num.field->type == PRINT_DYNAMIC_ARRAY) {
 			unsigned long offset;
 			offset = pevent_read_number(pevent,
-				data + arg->hex.field->dynarray.field->offset,
-				arg->hex.field->dynarray.field->size);
+				data + arg->num.field->dynarray.field->offset,
+				arg->num.field->dynarray.field->size);
 			hex = data + (offset & 0xffff);
 		} else {
-			field = arg->hex.field->field.field;
+			field = arg->num.field->field.field;
 			if (!field) {
-				str = arg->hex.field->field.name;
+				str = arg->num.field->field.name;
 				field = pevent_find_any_field(event, str);
 				if (!field)
 					goto out_warning_field;
-				arg->hex.field->field.field = field;
+				arg->num.field->field.field = field;
 			}
 			hex = data + field->offset;
 		}
-		len = eval_num_arg(data, size, event, arg->hex.size);
+		len = eval_num_arg(data, size, event, arg->num.size);
 		for (i = 0; i < len; i++) {
 			if (i)
 				trace_seq_putc(s, ' ');
@@ -4923,9 +4923,9 @@ static void print_args(struct print_arg *args)
 		break;
 	case PRINT_HEX:
 		printf("__print_hex(");
-		print_args(args->hex.field);
+		print_args(args->num.field);
 		printf(", ");
-		print_args(args->hex.size);
+		print_args(args->num.size);
 		printf(")");
 		break;
 	case PRINT_STRING:
