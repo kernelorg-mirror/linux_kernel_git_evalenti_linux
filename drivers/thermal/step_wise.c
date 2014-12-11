@@ -27,22 +27,34 @@
 
 #include "thermal_core.h"
 
-/*
- * If the temperature is higher than a trip point,
+/**
+ * DOC: Algorithm
+ *
+ * If the temperature is higher than a trip point:
+ *
  *    a. if the trend is THERMAL_TREND_RAISING, use higher cooling
  *       state for this trip point
+ *
  *    b. if the trend is THERMAL_TREND_DROPPING, use lower cooling
  *       state for this trip point
+ *
  *    c. if the trend is THERMAL_TREND_RAISE_FULL, use upper limit
  *       for this trip point
+ *
  *    d. if the trend is THERMAL_TREND_DROP_FULL, use lower limit
  *       for this trip point
+ *
+ *
  * If the temperature is lower than a trip point,
+ *
  *    a. if the trend is THERMAL_TREND_RAISING, do nothing
+ *
  *    b. if the trend is THERMAL_TREND_DROPPING, use lower cooling
  *       state for this trip point, if the cooling state already
  *       equals lower limit, deactivate the thermal instance
+ *
  *    c. if the trend is THERMAL_TREND_RAISE_FULL, do nothing
+ *
  *    d. if the trend is THERMAL_TREND_DROP_FULL, use lower limit,
  *       if the cooling state already equals lower limit,
  *       deactivate the thermal instance
@@ -172,13 +184,14 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
  * step_wise_throttle - throttles devices associated with the given zone
  * @tz - thermal_zone_device
  * @trip - the trip point
- * @trip_type - type of the trip point
  *
  * Throttling Logic: This uses the trend of the thermal zone to throttle.
  * If the thermal zone is 'heating up' this throttles all the cooling
  * devices associated with the zone and its particular trip point, by one
  * step. If the zone is 'cooling down' it brings back the performance of
  * the devices by one step.
+ *
+ * Return: 0.
  */
 static int step_wise_throttle(struct thermal_zone_device *tz, int trip)
 {
