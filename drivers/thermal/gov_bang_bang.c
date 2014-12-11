@@ -74,8 +74,8 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
 
 /**
  * bang_bang_control - controls devices associated with the given zone
- * @tz - thermal_zone_device
- * @trip - the trip point
+ * @tz: thermal_zone_device
+ * @trip: the trip point
  *
  * Regulation Logic: a two point regulation, deliver cooling state depending
  * on the previous state shown in this diagram:
@@ -98,6 +98,7 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
  *   * In case the fan is running, temperature must fall below
  *     (trip_temp - hyst) so that the fan gets turned off again.
  *
+ * Return: 0.
  */
 static int bang_bang_control(struct thermal_zone_device *tz, int trip)
 {
