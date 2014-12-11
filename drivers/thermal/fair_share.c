@@ -71,6 +71,7 @@ static long get_target_state(struct thermal_zone_device *tz,
 /**
  * fair_share_throttle - throttles devices associated with the given zone
  * @tz - thermal_zone_device
+ * @trip: the trip point
  *
  * Throttling Logic: This uses three parameters to calculate the new
  * throttle state of the cooling devices associated with the given zone.
@@ -85,6 +86,8 @@ static long get_target_state(struct thermal_zone_device *tz,
  *	whereas the throttling is at full swing if we trip critical levels.
  *	(Heavily assumes the trip points are in ascending order)
  * new_state of cooling device = P3 * P2 * P1
+ *
+ * Return: 0.
  */
 static int fair_share_throttle(struct thermal_zone_device *tz, int trip)
 {
