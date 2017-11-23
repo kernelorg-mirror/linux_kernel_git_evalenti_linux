@@ -41,6 +41,7 @@
 #include <asm/pgalloc.h>
 #include <asm/setup.h>
 #include <asm/espfix.h>
+#include <asm/kaiser.h>
 
 /*
  * Note: we only need 6*8 = 48 bytes for the espfix stack, but round
@@ -126,6 +127,23 @@ void __init init_espfix_bsp(void)
 	/* Install the espfix pud into the kernel page directory */
 	pgd_p = &init_level4_pgt[pgd_index(ESPFIX_BASE_ADDR)];
 	pgd_populate(&init_mm, pgd_p, (pud_t *)espfix_pud_page);
+
+	/*
+	 * Just copy the top-level PGD that is mapping the espfix
+	 * area to ensure it is mapped into the shadow user page
+	 * tables.
+	 *
+	 * For 5-level paging, the espfix pgd was populated when
+	 * kaiser_init() pre-populated all the pgd entries.  The above
+	 * p4d_alloc() would never do anything and the p4d_populate()
+	 * would be done to a p4d already mapped in the userspace pgd.
+	 */
+#ifdef CONFIG_KAISER
+	if (CONFIG_PGTABLE_LEVELS <= 4) {
+		set_pgd(kernel_to_shadow_pgdp(pgd),
+			__pgd(_KERNPG_TABLE | (p4d_pfn(*p4d) << PAGE_SHIFT)));
+	}
+#endif
 
 	/* Randomize the locations */
 	init_espfix_random();

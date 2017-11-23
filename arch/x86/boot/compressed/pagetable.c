@@ -15,6 +15,11 @@
 #define __pa(x)  ((unsigned long)(x))
 #define __va(x)  ((void *)((unsigned long)(x)))
 
+/*
+ * No KAISER support needed either:
+ */
+#undef CONFIG_KAISER
+
 #include "misc.h"
 
 /* These actually do the work of building the kernel identity maps. */

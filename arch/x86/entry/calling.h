@@ -1,5 +1,6 @@
 #include <linux/jump_label.h>
 #include <asm/cpufeatures.h>
+#include <asm/page_types.h>
 
 /*
 
