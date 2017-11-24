@@ -32,19 +32,16 @@ void stack_type_str(enum stack_type type, const char **begin, const char **end)
 {
 	BUILD_BUG_ON(N_EXCEPTION_STACKS != 4);
 
-	switch (type) {
-	case STACK_TYPE_IRQ:
-		*begin = "IRQ";
-		*end   = "EOI";
-		break;
-	case STACK_TYPE_EXCEPTION ... STACK_TYPE_EXCEPTION_LAST:
-		*begin = exception_stack_names[type - STACK_TYPE_EXCEPTION];
-		*end   = "EOE";
-		break;
-	default:
-		*begin = NULL;
-		*end   = NULL;
-	}
+	if (type == STACK_TYPE_IRQ)
+		return "IRQ";
+
+	if (type == STACK_TYPE_SYSENTER)
+		return "SYSENTER";
+
+	if (type >= STACK_TYPE_EXCEPTION && type <= STACK_TYPE_EXCEPTION_LAST)
+		return exception_stack_names[type - STACK_TYPE_EXCEPTION];
+
+	return NULL;
 }
 
 static bool in_exception_stack(unsigned long *stack, struct stack_info *info)
@@ -117,6 +114,9 @@ int get_stack_info(unsigned long *stack, struct task_struct *task,
 		goto recursion_check;
 
 	if (in_irq_stack(stack, info))
+		goto recursion_check;
+
+	if (in_sysenter_stack(stack, info))
 		goto recursion_check;
 
 	goto unknown;
