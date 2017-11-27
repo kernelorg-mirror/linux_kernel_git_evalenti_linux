@@ -192,11 +192,13 @@ static pte_t *kaiser_shadow_pagetable_walk(unsigned long address,
 			return NULL;
 
 		spin_lock(&shadow_table_allocation_lock);
-		if (pud_none(*pud))
+		if (pud_none(*pud)) {
 			set_pud(pud, __pud(_KERNPG_TABLE | __pa(new_pmd_page)));
-		else
-			free_page(new_pmd_page);
+			new_pmd_page = 0;
+		}
 		spin_unlock(&shadow_table_allocation_lock);
+		if (new_pmd_page)
+			free_page(new_pmd_page);
 	}
 
 	pmd = pmd_offset(pud, address);
@@ -211,11 +213,13 @@ static pte_t *kaiser_shadow_pagetable_walk(unsigned long address,
 			return NULL;
 
 		spin_lock(&shadow_table_allocation_lock);
-		if (pmd_none(*pmd))
+		if (pmd_none(*pmd)) {
 			set_pmd(pmd, __pmd(_KERNPG_TABLE  | __pa(new_pte_page)));
-		else
-			free_page(new_pte_page);
+			new_pte_page = 0;
+		}
 		spin_unlock(&shadow_table_allocation_lock);
+		if (new_pte_page)
+			free_page(new_pte_page);
 	}
 
 	pte = pte_offset_kernel(pmd, address);
